@@ -328,7 +328,7 @@ function createPullRequest(inputs) {
             const git = yield git_command_manager_1.GitCommandManager.create(repoPath);
             // Save and unset the extraheader auth config if it exists
             core.startGroup('Save persisted git credentials');
-            gitAuthHelper = new git_auth_helper_1.GitAuthHelper(git);
+            gitAuthHelper = yield git_auth_helper_1.GitAuthHelper.create(git);
             yield gitAuthHelper.savePersistedAuth();
             core.endGroup();
             // Init the GitHub client
@@ -543,14 +543,20 @@ const path = __importStar(__nccwpck_require__(1017));
 const url_1 = __nccwpck_require__(7310);
 const utils = __importStar(__nccwpck_require__(918));
 class GitAuthHelper {
-    constructor(git) {
+    constructor(git, gitDir) {
         this.extraheaderConfigPlaceholderValue = 'AUTHORIZATION: basic ***';
         this.extraheaderConfigValueRegex = '^AUTHORIZATION:';
         this.persistedExtraheaderConfigValue = '';
         this.git = git;
-        this.gitConfigPath = path.join(this.git.getWorkingDirectory(), '.git', 'config');
+        this.gitConfigPath = path.join(this.git.getWorkingDirectory(), gitDir, 'config');
         const serverUrl = this.getServerUrl();
         this.extraheaderConfigKey = `http.${serverUrl.origin}/.extraheader`;
+    }
+    static create(git) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const gitDir = yield git.getGitDirectory();
+            return new GitAuthHelper(git, gitDir);
+        });
     }
     savePersistedAuth() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -791,6 +797,9 @@ class GitCommandManager {
             ]);
             return output.stdout.trim().split(`${configKey} `)[1];
         });
+    }
+    getGitDirectory() {
+        return this.revParse('--git-dir');
     }
     getWorkingDirectory() {
         return this.workingDirectory;

@@ -13,15 +13,20 @@ export class GitAuthHelper {
   private extraheaderConfigValueRegex = '^AUTHORIZATION:'
   private persistedExtraheaderConfigValue = ''
 
-  constructor(git: GitCommandManager) {
+  private constructor(git: GitCommandManager, gitDir: string) {
     this.git = git
     this.gitConfigPath = path.join(
       this.git.getWorkingDirectory(),
-      '.git',
+      gitDir,
       'config'
     )
     const serverUrl = this.getServerUrl()
     this.extraheaderConfigKey = `http.${serverUrl.origin}/.extraheader`
+  }
+
+  static async create(git: GitCommandManager): Promise<GitAuthHelper> {
+    const gitDir = await git.getGitDirectory()
+    return new GitAuthHelper(git, gitDir)
   }
 
   async savePersistedAuth(): Promise<void> {

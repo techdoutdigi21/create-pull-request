@@ -11,7 +11,7 @@ describe('git-auth-helper tests', () => {
 
   beforeAll(async () => {
     git = await GitCommandManager.create(REPO_PATH)
-    gitAuthHelper = new GitAuthHelper(git)
+    gitAuthHelper = await GitAuthHelper.create(git)
   })
 
   it('tests save and restore with no persisted auth', async () => {

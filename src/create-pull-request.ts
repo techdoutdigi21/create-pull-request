@@ -46,7 +46,7 @@ export async function createPullRequest(inputs: Inputs): Promise<void> {
 
     // Save and unset the extraheader auth config if it exists
     core.startGroup('Save persisted git credentials')
-    gitAuthHelper = new GitAuthHelper(git)
+    gitAuthHelper = await GitAuthHelper.create(git)
     await gitAuthHelper.savePersistedAuth()
     core.endGroup()
 
